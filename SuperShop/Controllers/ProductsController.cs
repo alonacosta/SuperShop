@@ -51,7 +51,7 @@ namespace SuperShop.Controllers
         }
 
         // GET: Products/Create
-        [Authorize]
+        [Authorize(Roles ="Admin")]    //[Authorize(Roles ="Admin,Customer")]
         public IActionResult Create()
         {
             return View();
