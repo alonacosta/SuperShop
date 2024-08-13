@@ -12,7 +12,7 @@ namespace SuperShop.Controllers
         private readonly IOrderRepository _orderRepository;
         private readonly IProductRepository _productRepository;
 
-        public OrdersController(IOrderRepository orderRepository, IProductRepository productRepository) 
+        public OrdersController(IOrderRepository orderRepository, IProductRepository productRepository)
         {
             _orderRepository = orderRepository;
             _productRepository = productRepository;
@@ -30,7 +30,7 @@ namespace SuperShop.Controllers
             return View(model);
         }
 
-        public IActionResult AddProduct() 
+        public IActionResult AddProduct()
         {
             var model = new AddItemViewModel
             {
@@ -55,7 +55,7 @@ namespace SuperShop.Controllers
 
         public async Task<IActionResult> DeleteItem(int? id)
         {
-            if(id == null)
+            if (id == null)
             {
                 return NotFound();
             }
@@ -86,5 +86,15 @@ namespace SuperShop.Controllers
             return RedirectToAction("Create");
         }
 
+        public async Task<IActionResult> ConfirmOrder()
+        {
+            var response = await _orderRepository.ConfirmOrderAsync(this.User.Identity.Name);
+            if (response)
+            {
+                return RedirectToAction("Index");
+            }
+            return RedirectToAction("Create");
+
+        }
     }
 }
