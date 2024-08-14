@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using SuperShop.Data;
 using SuperShop.Helpers;
@@ -51,9 +52,9 @@ namespace SuperShop.Controllers
         }
 
         // GET: Products/Create
-        [Authorize(Roles ="Admin")]    //[Authorize(Roles ="Admin,Customer")]
+       /* [Authorize(Roles ="Admin")]*/    //[Authorize(Roles ="Admin,Customer")]
         public IActionResult Create()
-        {
+        {           
             return View();
         }
 
@@ -194,12 +195,31 @@ namespace SuperShop.Controllers
         // POST: Products/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var product = await _productRepository.GetByIdAsync(id);
-            await _productRepository.DeleteAsync(product);
+            try
+            {
+               // throw new Exception("Test Exception");
+                await _productRepository.DeleteAsync(product);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateException ex)
+            {
+                if(ex.InnerException != null && ex.InnerException.Message.Contains("DELETE"))
+                {
+                    ViewBag.ErrorTitle = $"{product.Name} is probably being used!!!";
+                    ViewBag.ErrorMessage = $"{product.Name} can't be deleted because there are orders that use it <br/>" +
+                    $"First try deleting all the orders that are using it," +
+                    $" and delete it again";
+                }
 
-            return RedirectToAction(nameof(Index));
+                
+
+                return View("Error");
+            }     
+   
         }
 
         public IActionResult ProductNotFound()
